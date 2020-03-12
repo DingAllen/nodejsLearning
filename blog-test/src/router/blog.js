@@ -19,7 +19,7 @@ const handleBlogRouter = (req, res) => {
     const url = req.url
     const path = url.split('?')[0]
     const query = querystring.parse(url.split('?')[1])
-    const id = query.id
+    const id = query.id || -1
     const body = req.body
 
     // 获取博客列表
@@ -27,49 +27,54 @@ const handleBlogRouter = (req, res) => {
 
         const author = query.author || ''
         const keyword = query.keyword || ''
-        const listData = getList(author, keyword)
 
-        return new SuccessModel(listData)
+        return getList(author, keyword).then(listData => {
+            return new SuccessModel(listData)
+        })
     }
 
     // 获取博客详情
     if (method === 'GET' && path === '/api/blog/detail') {
 
-        const detailData = getDetail(id)
-
-        return new SuccessModel(detailData)
+        return getDetail(id).then(data => {
+            return new SuccessModel(data)
+        })
     }
 
     // 新建一篇博客
     if (method === 'POST' && path === '/api/blog/new') {
 
-        const blogData = newBlog(body)
+        body.author = '俊霖无敌' // 假数据，待开发登录时再改为真实数据
 
-        return new SuccessModel(blogData)
+        return newBlog(body).then(data => {
+            return new SuccessModel(data)
+        })
     }
 
     // 更新一篇博客
     if (method === 'POST' && path === '/api/blog/update') {
 
-        const result = updateBlog(id, body)
-
-        if (result) {
-            return new SuccessModel()
-        } else {
-            return new ErrorModel('更新博客失败')
-        }
+        return updateBlog(id, body).then(val => {
+            if (val) {
+                return new SuccessModel()
+            } else {
+                return new ErrorModel('更新博客失败')
+            }
+        })
     }
 
     // 删除一篇博客
     if (method === 'POST' && path === '/api/blog/del') {
 
-        const result = deleteBlog(id)
+        const author = '俊霖无敌' // 假数据，待开发登录时再改成真实数据
 
-        if (result) {
-            return new SuccessModel()
-        } else {
-            return new ErrorModel('删除博客失败')
-        }
+        return deleteBlog(id, author).then(val => {
+            if (val) {
+                return new SuccessModel()
+            } else {
+                return new ErrorModel('删除博客失败')
+            }
+        })
     }
 }
 
